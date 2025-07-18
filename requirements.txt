@@ -1,0 +1,6 @@
+speedtest-cli
+matplotlib
+requests
+click
+tabulate
+colorama
