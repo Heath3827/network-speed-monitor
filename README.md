@@ -230,7 +230,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - 🐛 **Bug Reports**: [Open an issue](https://github.com/LinuxCTRL/network-speed-monitor/issues)
 - 💡 **Feature Requests**: [Start a discussion](https://github.com/LinuxCTRL/network-speed-monitor/discussions)
-- 📧 **Contact**: your.email@example.com
+- 📧 **Contact**: sofalcons@outlook.com
 
 ---
 
