@@ -174,6 +174,7 @@ class SpeedMonitor:
 
     def save_result(self, result, alert_triggered=False):
         """Save speed test result to database"""
+        
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
@@ -182,7 +183,7 @@ class SpeedMonitor:
             (timestamp, download_speed, upload_speed, ping, server_name, server_location, isp, alert_triggered)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
-            result['timestamp'],
+            result['timestamp'].isoformat(),  # <-- Convert to ISO 8601 string to avoid errors in python 3.12+
             result['download_speed'],
             result['upload_speed'],
             result['ping'],
@@ -512,14 +513,17 @@ def report(last_week, last_month, today, stats, export, limit):
                         from datetime import datetime as dt
 
                         # Parse timestamps and speeds
-                        timestamps = [dt.strptime(row[0], '%Y-%m-%d %H:%M:%S') for row in results]
+                        #timestamps = [dt.strptime(row[0], '%Y-%m-%d %H:%M:%S') for row in results]    # old line caused date-time errors in output when using Python 3.12+
+                        timestamps = [dt.fromisoformat(row[0]) for row in results]    # edited to stop errors in Python 3.12+
                         download_speeds = [row[1] for row in results]
                         upload_speeds = [row[2] for row in results]
+                        ping_rate = [row[3] for row in results]
 
                         # Reverse for chronological order
                         timestamps.reverse()
                         download_speeds.reverse()
                         upload_speeds.reverse()
+                        ping_rate.reverse()
 
                         # Convert datetime objects to matplotlib date numbers
                         timestamps_num = mdates.date2num(timestamps)
@@ -528,10 +532,15 @@ def report(last_week, last_month, today, stats, export, limit):
                         fig, ax = plt.subplots(figsize=(12, 6))
                         ax.plot(timestamps_num, download_speeds, label='Download', color='blue', linewidth=2)
                         ax.plot(timestamps_num, upload_speeds, label='Upload', color='red', linewidth=2)
-
+                        ax.plot(timestamps_num, ping_rate, label='Latency (Ping)', color='green', linewidth=2)    # added ping worm to the chart
+                        
                         ax.set_xlabel('Time')
                         ax.set_ylabel('Speed (Mbps)')
                         ax.set_title('Internet Speed Over Time')
+                        ax.set_ylim(0,500)    #set speed scale limits for better and consistent chart display
+                        ax_ping_rate = ax.twinx()    # added ping worm to the chart
+                        ax_ping_rate.set_ylabel('Latency (Sec)')    # added ping worm to the chart
+                        ax_ping_rate.set_ylim(0,1)    #set ping scale limits for better chart display
                         ax.legend()
                         ax.grid(True, alpha=0.3)
 
